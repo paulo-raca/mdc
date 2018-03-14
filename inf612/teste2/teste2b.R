@@ -1,6 +1,6 @@
 ########################################
 # Teste 2b - INF-0612          
-# Nome(s): 
+# Nome(s): Paulo Roberto de Almeida Costa
 ########################################
 
 ids <- c(172742, 172773, 172825, 172839, 172967, 173149, 173204, 173370, 174096, 174355, 174437, 174487, 174488, 174928, 175380, 175832, 176859, 176914, 176940, 177388, 177554, 177609, 177643, 177825, 177925, 178085, 178137, 178377, 178397, 178525, 178664, 178674, 178740, 178779, 181987, 182039, 182049, 182901, 183024, 183143, 183517, 183984, 184400, 185247, 185820, 186218, 187014, 187217, 188078, 188494, 188548)
@@ -17,7 +17,56 @@ p4 <- c(9.9, 2.3, 10, 7.3, 8.6, 8.9, 0, 9.5, 4.5, 7.9, 8.9, 8.6, 8.2, 6.4, 2.7, 
 ## o menor elemento linha a linha. Por exemplo, dada uma matriz m, para 
 ## obter o menor elemento linha a linha entre as colunas 2 e 3, devemos 
 ## utilizar o comando rowMins(m[,c(2:3)]).
-
 rowMins <- function(m) {
  apply(m, 1, min)
 }
+
+
+## Você deve criar um data frame utilizando os vetores fornecidos e
+## sempre que utilizar algum dado já existente no arquivo referir-se
+## a este data frame (ou seja, você só pode utilizar os vetores 
+## fornecidos para criar este data frame).
+notas <- data.frame(row.names = ids, p1 = p1, p2 = p2, p3 = p3, p4 = p4)
+
+# Dado de exemplo
+#notas <- data.frame(row.names = 'Joãozinho', p1 = 8.3, p2 = 9, p3 = 5.2, p4 = 6.7)
+
+
+## Você deve salvar no vetor “medquad” a média final de cada aluno
+## (média quadrática das provas, desconsiderando a menor nota obtida), 
+## com duas casas decimais.
+notas$pmin <- rowMins(notas)
+notas$medquad <- round(
+    x = sqrt(1/3 * (notas$p1^2 + notas$p2^2 + notas$p3^2 + notas$p4^2 - notas$pmin^2)),
+    digits=2)
+notas
+medquad = notas$medquad
+medquad
+
+## Você deve salvar nas variáveis “mp1”, “mp2”, “mp3” e “mp4” 
+## a média aritmética das notas das provas 1, 2, 3 e 4, respectivamente.
+mp1 = mean(notas$p1)
+mp2 = mean(notas$p2)
+mp3 = mean(notas$p3)
+mp4 = mean(notas$p4)
+
+## Você deve salvar nas variáveis “dp1”, “dp2”, “dp3” e “dp4”
+## o desvio padrão das notas das provas 1, 2, 3 e 4, respectivamente.
+dp1 = sd(notas$p1)
+dp2 = sd(notas$p2)
+dp3 = sd(notas$p3)
+dp4 = sd(notas$p4)
+
+# Exibe média e desvio de cada prova
+data.frame(
+  row.names = c("P1", "P2", "P3", "P4"),
+  media = c(mp1, mp2, mp3, mp4), 
+  desvio.padrão = c(dp1, dp2, dp3, dp4))
+
+
+## Você deve salvar na variável “notasrank” os registros acadêmicos dos 
+## alunos tal que na primeira posição conste o registro acadêmico do
+## aluno com a maior média final, na segunda posição conste o registro
+## acadêmico do aluno com a segunda maior média final, e assim por diante.
+notasrank <- row.names(notas)[order(x=notas$medquad, decreasing=T)]
+notasrank
