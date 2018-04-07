@@ -1,0 +1,11 @@
+version: '2'
+services:
+    jupyter:
+        container_name: jupyter
+        build: .
+        volumes:
+            - ~/Workspace:/home/jovyan/work/
+        ports:
+            - "8888:8888"
+        environment:
+            - GRANT_SUDO = yes
