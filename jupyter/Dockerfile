@@ -2,19 +2,17 @@ FROM jupyter/datascience-notebook
 
 #from https://github.com/mjbright/jupyter_trusted_builds/blob/master/demo/Dockerfile
 
-# Upgrade OS
+# Upgrade OS and install a couple of packages
 USER root
 RUN apt-get update && \
     apt-get upgrade -y && \
+    apt-get install -y libreadline-dev nano xvfb libfontconfig wkhtmltopdf && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 
-# Install libreadline-dev, which is necessary for some of the dependencies
-RUN apt-get update && \
-    apt-get install -y libreadline-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+#Hack wkhtmltopdf to uses xvfb
+RUN mv /usr/bin/wkhtmltopdf /usr/bin/wkhtmltopdf2 && echo -e '#!/bin/bash\nxvfb-run wkhtmltopdf2 "$@"' > /usr/bin/wkhtmltopdf && chmod 755 /usr/bin/wkhtmltopdf
 
 
 # Alow sudo without password
@@ -31,6 +29,11 @@ RUN conda update --quiet --yes --all && \
     conda clean -tipsy && \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
+
+
+# Install bash_kernel:
+RUN pip install --no-cache-dir bash_kernel && \
+    python -m bash_kernel.install
 
 
 # Install Tensorflow
@@ -56,21 +59,20 @@ RUN pip install mpld3
 
 
 # Install hide_code extension:
-USER root
+user root
 RUN pip install hide_code && \
     jupyter nbextension install --py hide_code && \
     jupyter nbextension enable --py hide_code && \
-    jupyter serverextension enable --py hide_code && \
-    apt-get update && \
-    apt-get install -y xvfb libfontconfig wkhtmltopdf && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN mv /usr/bin/wkhtmltopdf /usr/bin/wkhtmltopdf2
-COPY wkhtmltopdf /usr/bin/
+    jupyter serverextension enable --py hide_code
 
 
+# Install Scisheets Widget
+user jovyan
+RUN \
+    git clone https://github.com/paulo-raca/jupyter_scisheets_widget.git && \
+    cd jupyter_scisheets_widget && \
+    python setup.py build && \
+    pip install -e . && \
+    jupyter nbextension install --py --symlink --sys-prefix jupyter_scisheets_widget && \
+    jupyter nbextension enable --py --sys-prefix jupyter_scisheets_widget
 
-# Install bash_kernel:
-# USER jovyan
-# RUN pip install --no-cache-dir bash_kernel && \
-#     python -m bash_kernel.install
