@@ -1,0 +1,3 @@
+[submodule "inf616/INF-0616-Exemplos"]
+	path = inf616/INF-0616-Exemplos
+	url = git@github.com:amellof/INF-0616-Exemplos.git
