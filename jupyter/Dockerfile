@@ -40,6 +40,7 @@ RUN pip install --no-cache-dir bash_kernel && \
 RUN conda update --quiet --yes --all && \
     conda install --quiet --yes \
     'tensorflow' \
+    'tensorboard' \
     'keras' && \
     conda clean -tipsy && \
     fix-permissions $CONDA_DIR && \
