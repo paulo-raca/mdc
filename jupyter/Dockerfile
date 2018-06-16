@@ -32,19 +32,11 @@ RUN conda update --quiet --yes --all && \
 
 
 # Install bash_kernel:
-RUN pip install --no-cache-dir bash_kernel && \
-    python -m bash_kernel.install
+RUN pip install --no-cache-dir bash_kernel
 
 
-# Install Tensorflow
-RUN conda update --quiet --yes --all && \
-    conda install --quiet --yes \
-    'tensorflow' \
-    'tensorboard' \
-    'keras' && \
-    conda clean -tipsy && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
+# Install list of dependencies from INF-618: Tensorflow, keras, etc
+RUN pip install --no-cache-dir -U  scipy ipykernel jupyter matplotlib h5py pydot-ng graphviz sklearn scikit-image np_utils opencv-contrib-python tensorflow keras Tensorboard
 
 
 # Install RISE (LIVE Reveal) extension:
@@ -60,11 +52,11 @@ RUN pip install mpld3
 
 
 # Install hide_code extension:
-user root
-RUN pip install hide_code && \
-    jupyter nbextension install --py hide_code && \
-    jupyter nbextension enable --py hide_code && \
-    jupyter serverextension enable --py hide_code
+#user root
+#RUN pip install hide_code && \
+#    jupyter nbextension install --py hide_code && \
+#    jupyter nbextension enable --py hide_code && \
+#    jupyter serverextension enable --py hide_code
 
 
 # Install Scisheets Widget
