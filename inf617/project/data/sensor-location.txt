@@ -1,0 +1,20 @@
+1	Jan Campinas, SP
+2	Feb Florianopolis, SC
+3	Mar Rio de Janeiro, RJ
+4	Apr Campo Grande, MS
+5	May Paranavai, PR
+6	Jun Amparo, SP
+7	Jul Ubatuba, SP
+8	Aug Guaruja, SP
+9	Sep Porto Velho, RO
+10	Oct Brasilia, DF
+11	Nov Sao Paulo, SP
+12	Dec Campinas, SP
+13	Campo Grande, MS
+14	Campo Grande, MS
+15	Campo Grande, MS
+16	Campo Grande, MS
+17	Brasilia, DF
+18	Paranavai, PR
+19	Campinas, SP
+20	Paranavai, PR

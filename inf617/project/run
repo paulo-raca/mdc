@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+BASEDIR=$(dirname "$0")
+
+function mysort {
+    # Sort normally messes up when there are special characters, like ' ' and '.'
+    LC_ALL=C sort
+}
+
+function map_reduce {
+    TASK=$1
+    INPUT=$2
+    OUTPUT=$3
+
+    echo "=== Launching Map-Reduce Task '$TASK' ==="
+    if [ -n "$FAST" ]; then
+        echo "--> Fast"
+        for x in $INPUT; do cat $x | map_input_file=$x "$BASEDIR/src/task.py" $TASK map; done | mysort | "$BASEDIR/src/task.py" $TASK reduce | mysort > $OUTPUT
+    else
+        echo "--> Hadoop"
+        hadoop fs -rm -r $OUTPUT  >/dev/null 2>/dev/null
+
+        hadoop jar /home/bitnami/stack/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.1.0.jar \
+            -files "$BASEDIR/src" \
+            "${@:4}" \
+            -mapper   "./src/task.py $TASK map" \
+            -reducer  "./src/task.py $TASK reduce" \
+            `for x in $INPUT; do echo "-input $x"; done` \
+            `for x in $OUTPUT; do echo "-output $x"; done`
+
+        hadoop fs -cat `for x in $OUTPUT; do echo "$x/part*"; done` | mysort > $OUTPUT
+    fi
+}
+
+function map_combine_reduce {
+    TASK=$1
+    INPUT=$2
+    OUTPUT=$3
+
+    # Using a combiner should be an extra argument, but my bash-fu failed me
+    # Instead, I copy-pasted `map_reduce` and added `-combiner` on the hadoop CLI and an extra step on the `FAST` CLI
+
+    echo "=== Launching Map-Combine-Reduce Task '$TASK' ==="
+    if [ -n "$FAST" ]; then
+        echo "--> Fast"
+        for x in $INPUT; do cat $x | map_input_file=$x "$BASEDIR/src/task.py" $TASK map; done | mysort | "$BASEDIR/src/task.py" $TASK combine | mysort | "$BASEDIR/src/task.py" $TASK reduce | mysort > $OUTPUT
+    else
+        echo "--> Hadoop"
+        hadoop fs -rm -r $OUTPUT  >/dev/null 2>/dev/null
+
+        hadoop jar /home/bitnami/stack/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.1.0.jar \
+            -files "$BASEDIR/src" \
+            "${@:4}" \
+            -mapper   "./src/task.py $TASK map" \
+            -combiner "./src/task.py $TASK combine" \
+            -reducer  "./src/task.py $TASK reduce" \
+            `for x in $INPUT; do echo "-input $x"; done` \
+            `for x in $OUTPUT; do echo "-output $x"; done`
+
+        hadoop fs -cat `for x in $OUTPUT; do echo "$x/part*"; done` | mysort > $OUTPUT
+    fi
+}
+
+
+# Copy inputs to HDFS
+if [ -z "$FAST" ]; then
+    hadoop fs -rm -r measurements.txt sensor-location.txt >/dev/null 2>/dev/null
+    hadoop fs -put measurements.txt sensor-location.txt .
+fi
+
+map_reduce merge_location "measurements.txt sensor-location.txt" location_measurements.out \
+    -D map.output.key.field.separator=. \
+    -D mapred.text.key.partitioner.options=-k1 \
+    -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner
+map_combine_reduce task1 location_measurements.out item1.out
+map_combine_reduce task2 location_measurements.out item2.out
+map_combine_reduce task3 location_measurements.out item3.out
